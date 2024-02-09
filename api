@@ -1,0 +1,51 @@
+
+//for getting task id by calling api 
+import requests
+API_KEY = "da0f389620168bcea1a511b1eea4f2379b39fcb16dc1ca78b304854d654bca59"
+endpoint = "https://api.midjourneyapi.xyz/mj/imagine"
+headers = {
+    "X-API-KEY": API_KEY
+}
+data = {
+    "prompt": "a running cat in forest"
+}
+response = requests.post(endpoint, headers=headers, json=data)
+task_id = response.json().get('task_id') 
+//get the image url generated when status is finished 
+import requests
+endpoint_fetch = "https://api.midjourneyapi.xyz/mj/fetch"
+data = {
+    "task_id": task_id
+}
+response = requests.post(endpoint, json=data)
+if response.status_code == 200:
+    if task_id:
+        print("Task ID:", task_id)
+        # Fetch loop
+        while True:
+            data_fetch = {
+                "task_id": task_id
+            }
+            response = requests.post(endpoint_fetch, json=data_fetch)
+            if response.status_code == 200:
+                response_data = response.json()
+                print("Task Status:", response_data.get('status'))
+                if response_data.get('status') == 'finished':
+                    print("Task is finished.")
+                    break
+            else:
+                print("Failed to fetch task status.")
+                break
+    else:
+        print("Task ID not found in the response.")
+image_url = response.json().get('task_result').get("image_url")
+//download the image from the url 
+
+import requests
+response = requests.get(image_url)
+if response.status_code == 200:
+    with open("downloaded_image.png", "wb") as f:
+        f.write(response.content)
+    print("Image downloaded successfully!")
+else:
+    print("Failed to download the image:", response.status_code)
